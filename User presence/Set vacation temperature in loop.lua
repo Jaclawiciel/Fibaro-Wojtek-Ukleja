@@ -10,7 +10,7 @@ if fibaro:countScenes() > 1 then fibaro:abort() end -- zabij instancję sceny gd
 -- ************ BEGIN configuration block ************
 TIME_BETWEEN_LOOPS = 30 -- Czas co jaki zostanie uruchomiony kod w pętli (w minutach)
 TIME_ON_VACATION_TEMP = 10
-HEATING_ZONES = {"Kuchnia", "Wiatrołap" }
+HEATING_ZONES = {"Kuchnia", "Wiatrołap"}
 VACATION_TEMPERATURE = 30 -- temperatura jaką chcemy ustawić jako wakacyjna
 -- ************ END configuration block ************
 
@@ -57,22 +57,33 @@ heatingZones = (function()
     for _, heatingZoneName in pairs(HEATING_ZONES) do -- 7. Iterujemy po nazwach stref ogrzewania, które deklarujemy na samej górze np. "Kuchnia", "Wiatrołap"... do heatingZoneName będzie zapisywało się kolejno właśnie "Kuchnia", "Wiatrołap". Mega przydatny rodzaj pętli.
         table.insert(heatingZones, HeatingZone:new(heatingZoneName)) -- 8. dodajemy po kolei do tablicy heatingZones obiekty, które utworzy nam klasa HeatingZone przez wywołanie metody new (tzw. konstruktor).
     end
+    return heatingZones
 end)()
 -- ************ END creating objects block ************
 
 -- ************ BEGIN helper functions ************
 function loop()
+    fibaro:debug(" ")
+    fibaro:debug("Start pętli")
     -- 2. Wszystko w funkcji loop będzie wykonywane w pętli (nazwa loop nie ma tutaj nic do rzeczy)
     if ((math.floor(os.time()/60) - math.floor(1579820400/60)) % TIME_BETWEEN_LOOPS == 0) then -- 3. Tutaj jest warunek, który sprawdza czy minęło TIME_BETWEEN_LOOPS (zadeklarowane na samej górze - 30) minut (nie do końca chodzi o przemijanie czasu, ale nie ma sensu tego analizować)
+        fibaro:debug("Minęło "..TIME_BETWEEN_LOOPS.." minut!")
         for _, heatingZone in pairs(heatingZones) do -- 4. Iteracja po obiektach HeatingZone, skocz do punktu 5, żeby zobaczyć skąd się biorą te obiekty i czym w ogóle są
+            fibaro:debug("Nastawiam strefę '"..heatingZone.fibaroZoneObject.name.."' na temperaturę wakacyjną: "..VACATION_TEMPERATURE.." C")
             heatingZone:setVacationTemperature(VACATION_TEMPERATURE) -- 17. Wywołanie metody do ustawiania temperatury wakacyjnej
         end
+        fibaro:debug("Czekam "..TIME_ON_VACATION_TEMP.." minut na podgrzanie podłogi. ")
         fibaro:sleep(1000 * 60 * TIME_ON_VACATION_TEMP) -- 21. Uśpienie sceny na zadany czas. Parametr podaje się w milisekundach więc żeby uśpić na 10 minut trzeba trochę matematyki. 1000 milisekund (sekunda) * 60 -> 1 minuta -> * TIME_ON_VACATION_TEMP (zadeklarowane na samej górze - 10) daje nam 10 minut.
+        fibaro:debug("Minęło "..TIME_ON_VACATION_TEMP.." minut.")
         for _, heatingZone in pairs(heatingZones) do -- 22. Iteracja po obiektach HeatingZone, tak samo jak wyżej
+            fibaro:debug("Nastawiam temperaturę w strefie '"..heatingZone.fibaroZoneObject.name.."' zgodnie z harmonogramem.")
             heatingZone:backToSchedule() -- 23. wywołanie metody na obiekcie, który zresetuje nastawę do tej z harmonogramu
         end
+    else
+        fibaro:debug("Nie minęło "..TIME_BETWEEN_LOOPS.." minut")
     end
-
+    fibaro:debug("Koniec pętli")
+    fibaro:debug(" ")
     setTimeout(loop, 1000 * 60) -- 24. Poczekaj 1000 milisekund * 60 -> minutę i odpal funkcję loop. Jak widzisz funkcja odpala się co minutę, ale ten długi, skomplikowany warunek z punktu 3 nie wpuszcza jej dalej (dopóki nie minie 30 minut)
 end
 -- ************ END helper functions ************
