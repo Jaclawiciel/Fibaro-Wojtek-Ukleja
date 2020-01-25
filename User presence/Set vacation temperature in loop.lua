@@ -9,8 +9,8 @@ if fibaro:countScenes() > 1 then fibaro:abort() end -- zabij instancję sceny gd
 
 -- ************ BEGIN configuration block ************
 TIME_BETWEEN_LOOPS = 30 -- Czas co jaki zostanie uruchomiony kod w pętli (w minutach)
-TIME_ON_VACATION_TEMP = 10
-HEATING_ZONES = {"Kuchnia", "Wiatrołap"}
+TIME_ON_VACATION_TEMP = 10 -- Czas na jaki zostanie uruchomione ogrzewanie wakacyjne
+HEATING_ZONES = {"Kuchnia", "Wiatrołap"} -- Nazwy stref ogrzewania
 VACATION_TEMPERATURE = 30 -- temperatura jaką chcemy ustawić jako wakacyjna
 -- ************ END configuration block ************
 
